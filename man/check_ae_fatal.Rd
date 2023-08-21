@@ -102,7 +102,7 @@ AE <- data.frame(
 
 check_ae_fatal(AE)
 
-# AETOXGR, existing but unmapped AESEV
+# AETOXGR exists but unmapped AESEV
 
  AE <- data.frame(
  USUBJID = 1:5,

@@ -97,7 +97,7 @@
 #'
 #' check_ae_fatal(AE)
 #'
-#' # AETOXGR, existing but unmapped AESEV
+#' # AETOXGR exists but unmapped AESEV
 #'
 #'  AE <- data.frame(
 #'  USUBJID = 1:5,
@@ -136,27 +136,27 @@ check_ae_fatal <- function(AE,preproc=identity,...){
     outlist=list() #empty list for results
 
     # check if AEOUT=='FATAL' that there is a corresponding AEDTHDTC, death date
-
-    if(AE %has_any% "AETOXGR" & !all(is_sas_na(AE$AETOXGR))){ #Non-empty AETOXGR exists
-
-    outlist[[1]] = AE %>%
-      filter(AEOUT=='FATAL' & (is_sas_na(AEDTHDTC) | AETOXGR !=5 | is_sas_na(AETOXGR) | AESDTH != "Y" | is_sas_na(AESDTH)))
+    
+    #1. AETOXGR exists and is populated
+    if(AE %has_any% "AETOXGR"){ #if var exists
+      if(!all(is_sas_na(AE$AETOXGR))){ #Only run check if var is mapped
+        outlist[[1]] = AE %>%
+          filter(AEOUT=='FATAL' & (is_sas_na(AEDTHDTC) | AETOXGR !=5 | is_sas_na(AETOXGR) | AESDTH != "Y" | is_sas_na(AESDTH)))
+      }
     }
-
-    if(AE %has_any% "AESEV" & !all(is_sas_na(AE$AESEV))){ #Non-empty AESEV exists
-
-    outlist[[2]] <- AE %>%
+    
+    #2. AESEV exists and is populated
+    if(AE %has_any% "AESEV"){ #if var exists
+      if(!all(is_sas_na(AE$AESEV))){#Only run check if var is mapped
+        outlist[[2]] <- AE %>%
           filter(AEOUT=='FATAL' & (is_sas_na(AEDTHDTC) | AESEV != "SEVERE" | AESDTH != "Y" | is_sas_na(AESDTH)))
-
+      }
     }
-
-    #Neither of Non-empty AESEV/AETOXGR exists
-    #ie Both AESEV/AETOXGR don't exists or one or more exists but is not mapped
-
-    if(!(AE %has_any% "AESEV" & !all(is_sas_na(AE$AESEV))) & !(AE %has_any% "AETOXGR" & !all(is_sas_na(AE$AETOXGR)))){
-
-    outlist[[3]] <- AE %>%
-          filter(AEOUT=='FATAL' & (is_sas_na(AEDTHDTC) | AESDTH != "Y" | is_sas_na(AESDTH)))
+    
+    #3. If neither AETOXGR or AESEV exist
+    if(!(AE %has_any% "AESEV" & AE %has_any% "AETOXGR")){
+      outlist[[3]] <- AE %>%
+        filter(AEOUT=='FATAL' & (is_sas_na(AEDTHDTC) | AESDTH != "Y" | is_sas_na(AESDTH)))
     }
 
     mydf = bind_rows(outlist)
